@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
-import { AuthModule } from './users/users.module';
+import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './users/entities/user.entity';
+import { JsonApiModule } from './shared/json-api/json-api.module';
 
 @Module({
   imports: [
-    AuthModule,
+    JsonApiModule,
+    UsersModule,
     TypeOrmModule.forRoot({
       type: 'sqlite',
       database: 'db.sqlite',

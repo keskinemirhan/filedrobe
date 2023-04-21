@@ -17,7 +17,12 @@ export class UsersService {
     const matchUsername = await this.matchByUsername(username);
     if (matchUsername) throw new BadRequestException('Username already exists');
 
-    const user = this.repo.create(sCreateUserDto);
+    const user = this.repo.create({
+      email: sCreateUserDto.email,
+      username: sCreateUserDto.username,
+      password: sCreateUserDto.password,
+    });
+
     const createdUser = await this.repo.save(user);
 
     return createdUser;
