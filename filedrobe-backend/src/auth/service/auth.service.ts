@@ -5,10 +5,12 @@ import { JwtService } from '@nestjs/jwt';
 import { LoginByEmailDto } from '../dto/login-by-email.dto';
 import { RegisterDto } from '../dto/register.dto';
 import { SCreateUserDto } from 'src/user/sdto/s.create-user.dto';
+import { ProfileService } from 'src/profile/profile.service';
 
 @Injectable()
 export class AuthService {
   constructor(
+    private profileService: ProfileService,
     private userService: UserService,
     private jwtService: JwtService,
   ) {}
@@ -41,6 +43,11 @@ export class AuthService {
     if (byUsername) throw new BadRequestException('username already exists');
     const byEmail = await this.userService.findByEmail(registerDto.email);
     if (byEmail) throw new BadRequestException('email already exists');
-    return this.userService.createUser(registerDto as SCreateUserDto);
+    const regProfile = await this.profileService.createProfile();
+    const { profile, ...registered } = await this.userService.createUser({
+      profile: regProfile,
+      ...registerDto,
+    });
+    return registered;
   }
 }

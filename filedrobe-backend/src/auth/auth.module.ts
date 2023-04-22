@@ -4,10 +4,13 @@ import { UsersModule } from 'src/user/user.module';
 import { AuthService } from './service/auth.service';
 import { AuthController } from './auth.controller';
 import { AuthGuard } from './guard/auth.guard';
+import { Profile } from 'src/profile/entities/profile.entity';
+import { ProfileModule } from 'src/profile/profile.module';
 
 @Module({
   providers: [AuthService, AuthGuard],
   imports: [
+    ProfileModule,
     UsersModule,
     JwtModule.register({
       global: true,

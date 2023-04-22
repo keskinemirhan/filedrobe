@@ -1,8 +1,13 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { SCreateUserDto } from './sdto/s.create-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
+import { updateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -21,6 +26,7 @@ export class UserService {
       email: sCreateUserDto.email,
       username: sCreateUserDto.username,
       password: sCreateUserDto.password,
+      profile: sCreateUserDto.profile,
     });
 
     const createdUser = await this.repo.save(user);
@@ -29,7 +35,9 @@ export class UserService {
   }
 
   async findById(id: string): Promise<User> {
-    const user = await this.repo.findOne({ where: { id } });
+    const user = await this.repo.findOne({
+      where: { id },
+    });
     return user;
   }
 
@@ -40,6 +48,22 @@ export class UserService {
       },
     });
     return user;
+  }
+
+  async updateUser(userId: string, updateUserDto: updateUserDto) {
+    if (updateUserDto.email) {
+      if (await this.matchByEmail(updateUserDto.email))
+        throw new BadRequestException('this email is taken');
+    }
+    if (updateUserDto.username) {
+      if (await this.matchByUsername(updateUserDto.username))
+        throw new BadRequestException('this username is taken');
+    }
+    const user = await this.findById(userId);
+    Object.assign(user, updateUserDto);
+    const { id, profile, password, ...saved } = await this.repo.save(user);
+
+    return saved;
   }
 
   async findByUsername(username: string): Promise<User> {
@@ -62,5 +86,11 @@ export class UserService {
   async getAllUser(): Promise<User[]> {
     const all = await this.repo.find();
     return all;
+  }
+
+  async deleteUser(userId: string) {
+    const deleted = await this.repo.findOne({ where: { id: userId } });
+    this.repo.delete(deleted);
+    return deleted;
   }
 }
