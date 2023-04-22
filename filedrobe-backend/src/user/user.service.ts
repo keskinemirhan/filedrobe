@@ -28,7 +28,7 @@ export class UserService {
     return createdUser;
   }
 
-  async findById(id: string, included: boolean): Promise<User> {
+  async findById(id: string): Promise<User> {
     const user = await this.repo.findOne({ where: { id } });
     return user;
   }
@@ -42,7 +42,7 @@ export class UserService {
     return user;
   }
 
-  async findByUsername(username: string, included: boolean): Promise<User> {
+  async findByUsername(username: string): Promise<User> {
     const user = await this.repo.findOne({
       where: {
         username,

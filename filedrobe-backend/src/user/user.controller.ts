@@ -1,6 +1,14 @@
-import { Body, Controller, Get, Post, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { SCreateUserDto } from './sdto/s.create-user.dto';
+import { AuthGuard } from 'src/auth/guard/auth.guard';
 @Controller('user')
 export class UsersController {
   constructor(private usersService: UserService) {}
@@ -13,6 +21,7 @@ export class UsersController {
     return await this.usersService.createUser(user as SCreateUserDto);
   }
 
+  @UseGuards(AuthGuard)
   @Get()
   async getAllUser() {
     return await this.usersService.getAllUser();
