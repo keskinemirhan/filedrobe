@@ -1,12 +1,9 @@
 import { Body, Controller, Get, Post, UseInterceptors } from '@nestjs/common';
-import { JsonApiInterceptor } from 'src/shared/json-api/interceptors/json-api.interceptor';
-import { CreateUserResourceObj } from 'src/shared/json-api/service/resource-types/user.obj';
-import { UsersService } from './users.service';
+import { UserService } from './user.service';
 import { SCreateUserDto } from './sdto/s.create-user.dto';
-@UseInterceptors(JsonApiInterceptor)
 @Controller('user')
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(private usersService: UserService) {}
   static typeName = 'user';
 
   @Post()
