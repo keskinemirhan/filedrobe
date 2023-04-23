@@ -2,16 +2,18 @@ import {
   Column,
   Entity,
   JoinColumn,
-  ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
+  Tree,
+  TreeChildren,
+  TreeParent,
 } from 'typeorm';
 import { DriveFile } from './drive-file.entity';
 import { FilePermission } from './file-permission.entity';
-import { UserDrive } from './user-drive.entity';
 
 @Entity()
+@Tree('closure-table')
 export class DriveFolder {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -22,10 +24,17 @@ export class DriveFolder {
   @OneToMany(() => DriveFile, (file) => file.folder)
   files: DriveFile[];
 
+  @TreeChildren()
+  children: DriveFolder[];
+
+  @TreeParent()
+  parent: DriveFolder;
+
+  @OneToOne(() => DriveFolder)
+  @JoinColumn()
+  rootFolder: DriveFolder;
+
   @OneToOne(() => FilePermission)
   @JoinColumn()
   permission: FilePermission;
-
-  @ManyToOne(() => UserDrive, (drive) => drive.folders)
-  drive: UserDrive;
 }

@@ -1,4 +1,11 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { DriveFile } from './drive-file.entity';
 import { DriveFolder } from './drive-folder.entity';
 import { Schema } from 'src/schematics/entities/schema.entity';
@@ -15,8 +22,9 @@ export class UserDrive {
   @OneToMany(() => DriveFile, (file) => file.drive, { eager: true })
   files: DriveFile[];
 
-  @OneToMany(() => DriveFolder, (folder) => folder.drive, { eager: true })
-  folders: DriveFolder[];
+  @OneToOne(() => DriveFolder, { eager: true })
+  @JoinColumn()
+  rootFolder: DriveFolder;
 
   @OneToMany(() => Schema, (schema) => schema.drive)
   schemas: Schema[];
