@@ -5,6 +5,7 @@ import { User } from './user/entities/user.entity';
 import { AuthModule } from './auth/auth.module';
 import { ProfileModule } from './profile/profile.module';
 import { Profile } from './profile/entities/profile.entity';
+import { DriveModule } from './drive/drive.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { Profile } from './profile/entities/profile.entity';
       entities: [User, Profile],
     }),
     ProfileModule,
+    DriveModule,
   ],
   controllers: [],
   providers: [],
