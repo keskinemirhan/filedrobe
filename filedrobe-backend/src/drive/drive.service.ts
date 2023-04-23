@@ -8,11 +8,11 @@ import { ProfileService } from 'src/profile/profile.service';
 @Injectable()
 export class DriveService {
   constructor(
-    @InjectRepository(UserDrive) private userDrive: Repository<UserDrive>,
+    @InjectRepository(UserDrive) private repo: Repository<UserDrive>,
     private profileService: ProfileService,
   ) {}
   async getDriveById(driveId: string) {
-    const drive = await this.userDrive.findOne({ where: { id: driveId } });
+    const drive = await this.repo.findOne({ where: { id: driveId } });
     return drive;
   }
 
@@ -20,5 +20,10 @@ export class DriveService {
     const profile = await this.profileService.getProfileById(profileId, true);
     const drive = profile.drive;
     return drive;
+  }
+
+  async createDrive() {
+    const drive = await this.repo.create();
+    return this.repo.save(drive);
   }
 }

@@ -6,6 +6,7 @@ import { LoginByEmailDto } from '../dto/login-by-email.dto';
 import { RegisterDto } from '../dto/register.dto';
 import { SCreateUserDto } from 'src/user/sdto/s.create-user.dto';
 import { ProfileService } from 'src/profile/profile.service';
+import { DriveService } from 'src/drive/drive.service';
 
 @Injectable()
 export class AuthService {
@@ -13,6 +14,7 @@ export class AuthService {
     private profileService: ProfileService,
     private userService: UserService,
     private jwtService: JwtService,
+    private driveService: DriveService,
   ) {}
   async loginByUsername(loginByUsernameDto: LoginByUsernameDto) {
     const user = await this.userService.findByUsername(
@@ -43,7 +45,8 @@ export class AuthService {
     if (byUsername) throw new BadRequestException('username already exists');
     const byEmail = await this.userService.findByEmail(registerDto.email);
     if (byEmail) throw new BadRequestException('email already exists');
-    const regProfile = await this.profileService.createProfile();
+    const regDrive = await this.driveService.createDrive();
+    const regProfile = await this.profileService.createProfile(regDrive);
     const { profile, ...registered } = await this.userService.createUser({
       profile: regProfile,
       ...registerDto,

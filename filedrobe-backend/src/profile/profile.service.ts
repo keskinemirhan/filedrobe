@@ -10,6 +10,7 @@ import { Repository } from 'typeorm';
 import { UserService } from 'src/user/user.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { User } from 'src/user/entities/user.entity';
+import { UserDrive } from 'src/drive/entities/user-drive.entity';
 
 @Injectable()
 export class ProfileService {
@@ -17,8 +18,8 @@ export class ProfileService {
     @InjectRepository(Profile) private repo: Repository<Profile>,
     private userService: UserService,
   ) {}
-  async createProfile() {
-    const profile = this.repo.create();
+  async createProfile(drive: UserDrive) {
+    const profile = this.repo.create({ drive });
     return await this.repo.save(profile);
   }
 

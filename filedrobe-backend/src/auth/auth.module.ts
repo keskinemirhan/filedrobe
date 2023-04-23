@@ -6,10 +6,12 @@ import { AuthController } from './auth.controller';
 import { AuthGuard } from './guard/auth.guard';
 import { Profile } from 'src/profile/entities/profile.entity';
 import { ProfileModule } from 'src/profile/profile.module';
+import { DriveModule } from 'src/drive/drive.module';
 
 @Module({
   providers: [AuthService, AuthGuard],
   imports: [
+    DriveModule,
     ProfileModule,
     UsersModule,
     JwtModule.register({
