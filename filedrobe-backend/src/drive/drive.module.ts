@@ -6,6 +6,8 @@ import { DriveFile } from './entities/drive-file.entity';
 import { FilePermission } from './entities/file-permission.entity';
 import { ProfileModule } from 'src/profile/profile.module';
 import { DriveService } from './drive.service';
+import { DriveController } from './drive.controller';
+import { UsersModule } from 'src/user/user.module';
 
 @Module({
   imports: [
@@ -16,8 +18,10 @@ import { DriveService } from './drive.service';
       FilePermission,
     ]),
     ProfileModule,
+    UsersModule,
   ],
   providers: [DriveService],
+  controllers: [DriveController],
   exports: [DriveService],
 })
 export class DriveModule {}

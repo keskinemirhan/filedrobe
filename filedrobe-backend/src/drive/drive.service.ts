@@ -11,6 +11,12 @@ export class DriveService {
     @InjectRepository(UserDrive) private repo: Repository<UserDrive>,
     private profileService: ProfileService,
   ) {}
+
+  //dev
+  async getAllDrive() {
+    return await this.repo.find();
+  }
+
   async getDriveById(driveId: string) {
     const drive = await this.repo.findOne({ where: { id: driveId } });
     return drive;

@@ -12,10 +12,10 @@ export class UserDrive {
   @OneToMany(() => Tag, (tag) => tag.drive)
   tags: Tag[];
 
-  @OneToMany(() => DriveFile, (file) => file.drive)
+  @OneToMany(() => DriveFile, (file) => file.drive, { eager: true })
   files: DriveFile[];
 
-  @OneToMany(() => DriveFolder, (folder) => folder.drive)
+  @OneToMany(() => DriveFolder, (folder) => folder.drive, { eager: true })
   folders: DriveFolder[];
 
   @OneToMany(() => Schema, (schema) => schema.drive)
