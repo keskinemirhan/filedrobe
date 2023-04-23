@@ -22,11 +22,12 @@ export class ProfileService {
     return await this.repo.save(profile);
   }
 
-  async getProfileById(profileId: string) {
+  async getProfileById(profileId: string, drive: boolean = false) {
     const myProfile = await this.repo.findOne({
       where: {
         id: profileId,
       },
+      relations: { drive },
     });
 
     return myProfile;
