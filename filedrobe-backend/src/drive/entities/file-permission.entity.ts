@@ -1,5 +1,11 @@
 import { User } from 'src/user/entities/user.entity';
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class FilePermission {
@@ -9,7 +15,7 @@ export class FilePermission {
   @Column()
   accessType: number;
 
-  @Column()
   @ManyToMany(() => User)
+  @JoinTable()
   users: User[];
 }

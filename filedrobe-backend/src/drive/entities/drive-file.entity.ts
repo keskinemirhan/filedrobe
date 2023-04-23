@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { DriveFolder } from './drive-folder.entity';
 import { FilePermission } from './file-permission.entity';
+import { UserDrive } from './user-drive.entity';
 
 @Entity()
 export class DriveFile {
@@ -20,11 +21,13 @@ export class DriveFile {
   @Column()
   name: string;
 
-  @Column()
   @ManyToOne(() => DriveFolder, (folder) => folder.files)
   folder: DriveFolder;
 
   @OneToOne(() => FilePermission)
   @JoinColumn()
   permission: FilePermission;
+
+  @ManyToOne(() => UserDrive, (drive) => drive.files)
+  drive: UserDrive;
 }

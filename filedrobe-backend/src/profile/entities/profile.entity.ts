@@ -1,7 +1,9 @@
+import { UserDrive } from 'src/drive/entities/user-drive.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
   Column,
   Entity,
+  JoinColumn,
   JoinTable,
   ManyToMany,
   OneToMany,
@@ -29,4 +31,8 @@ export class Profile {
   @ManyToMany(() => User)
   @JoinTable()
   contacts: User[];
+
+  @OneToOne(() => UserDrive)
+  @JoinColumn()
+  drive: UserDrive;
 }
