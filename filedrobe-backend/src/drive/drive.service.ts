@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserDrive } from './entities/user-drive.entity';
-import { Repository } from 'typeorm';
+import { Repository, TreeRepository } from 'typeorm';
 import { ProfileService } from 'src/profile/profile.service';
 import { DriveFolder } from './entities/drive-folder.entity';
 
@@ -10,6 +10,8 @@ export class DriveService {
   constructor(
     @InjectRepository(UserDrive) private driveRepo: Repository<UserDrive>,
     @InjectRepository(DriveFolder) private folderRepo: Repository<DriveFolder>,
+    @InjectRepository(DriveFolder)
+    private folderTreeRepo: TreeRepository<DriveFolder>,
     private profileService: ProfileService,
   ) {}
 
@@ -42,5 +44,31 @@ export class DriveService {
     const rootFolder = await this.folderRepo.create({ name: 'root' });
     const saved = await this.folderRepo.save(rootFolder);
     return saved;
+  }
+
+  async getFolderById(folderId: string) {
+    const folder = await this.folderRepo.findOne({
+      where: { id: folderId },
+      relations: { rootFolder: true },
+    });
+    return folder;
+  }
+
+  async getAllFolderTree() {
+    const tree = await this.folderTreeRepo.findTrees();
+    return tree;
+  }
+
+  async createFolder(name: string, parentId: string, profile: any) {
+    const parent = await this.getFolderById(parentId);
+    const drive = await this.getDriveByProfile(profile.id);
+    const rootFolder = drive.rootFolder;
+    if (parent.rootFolder) {
+      if (!(parent.rootFolder.id === rootFolder.id))
+        throw new NotFoundException(`folder with id ${parent.id} not found`);
+    } else if (!(rootFolder.id === parent.id))
+      throw new NotFoundException(`folder with id ${parent.id} not found`);
+    const folder = this.folderRepo.create({ name, rootFolder, parent });
+    return await this.folderRepo.save(folder);
   }
 }
