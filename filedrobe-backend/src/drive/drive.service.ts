@@ -78,8 +78,21 @@ export class DriveService {
     return await this.folderRepo.save(folder);
   }
 
-  async getFolder(id: string) {
-    const folder = await this.folderRepo.findOne({ where: { id } });
+  async getFolder(id: string, profile: any) {
+    const folder = await this.folderRepo.findOne({
+      where: { id },
+      relations: {
+        rootFolder: true,
+      },
+    });
+    const drive = await this.getDriveByProfile(profile.id);
+
+    if (!folder)
+      throw new BadRequestException(`folder with id ${id} not found`);
+    if (folder.id !== drive.rootFolder.id) {
+      if (folder.rootFolder.id !== drive.rootFolder.id)
+        throw new BadRequestException(`folder with id ${id} not found`);
+    }
     return folder;
   }
 

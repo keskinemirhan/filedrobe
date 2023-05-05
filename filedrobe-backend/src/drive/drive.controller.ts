@@ -50,9 +50,10 @@ export class DriveController {
     );
   }
 
+  @UseGuards(AuthGuard)
   @Get('folder/:id')
-  async getFolder(@Param('id') id: string) {
-    return await this.driveService.getFolderById(id);
+  async getFolder(@Req() req: any, @Param('id') id: string) {
+    return await this.driveService.getFolder(id, req.user.profile);
   }
 
   @UseGuards(AuthGuard)
