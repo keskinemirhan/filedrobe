@@ -1,7 +1,18 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { DriveService } from './drive.service';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { CreateFolderDto } from './dto/create-folder.dto';
+import { UpdateFolderDto } from './dto/update-folder.dto';
 
 @Controller('drive')
 export class DriveController {
@@ -37,5 +48,33 @@ export class DriveController {
       createFolderDto.parentId,
       req.user.profile,
     );
+  }
+
+  @Get('folder/:id')
+  async getFolder(@Param('id') id: string) {
+    return await this.driveService.getFolderById(id);
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch('folder/:id')
+  async updateFolder(
+    @Req() req: any,
+    @Param('id') id: string,
+    @Body() updateFolderDto: UpdateFolderDto,
+  ) {
+    return await this.driveService.updateFolder(
+      id,
+      {
+        name: updateFolderDto.name,
+        parentId: updateFolderDto.parentId,
+      },
+      req.user.profile,
+    );
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete('folder/:id')
+  async deleteFolder(@Req() req: any, @Param('id') id: string) {
+    return await this.driveService.deleteFolder(id, req.user.profile);
   }
 }

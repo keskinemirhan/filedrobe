@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserDrive } from './entities/user-drive.entity';
 import { Repository, TreeRepository } from 'typeorm';
@@ -49,7 +53,9 @@ export class DriveService {
   async getFolderById(folderId: string) {
     const folder = await this.folderRepo.findOne({
       where: { id: folderId },
-      relations: { rootFolder: true },
+      relations: {
+        rootFolder: true,
+      },
     });
     return folder;
   }
@@ -70,5 +76,64 @@ export class DriveService {
       throw new NotFoundException(`folder with id ${parent.id} not found`);
     const folder = this.folderRepo.create({ name, rootFolder, parent });
     return await this.folderRepo.save(folder);
+  }
+
+  async getFolder(id: string) {
+    const folder = await this.folderRepo.findOne({ where: { id } });
+    return folder;
+  }
+
+  async updateFolder(
+    id: string,
+    args: { name?: string; parentId?: string },
+    profile: any,
+  ) {
+    const drive = await this.getDriveByProfile(profile.id);
+    const folder = await this.folderRepo.findOne({
+      where: { id },
+      relations: {
+        rootFolder: true,
+      },
+    });
+    if (!folder)
+      throw new BadRequestException(`folder with id ${id} not found`);
+    if (folder.rootFolder.id !== drive.rootFolder.id)
+      throw new BadRequestException(`folder with id ${id} not found`);
+
+    if (args.name) folder.name = args.name;
+    if (args.parentId) {
+      const parent = await this.folderRepo.findOne({
+        where: { id: args.parentId },
+      });
+      if (!parent)
+        throw new BadRequestException(
+          `folder with given id ${args.parentId} not found`,
+        );
+      if (parent.id !== drive.rootFolder.id) {
+        if (parent.rootFolder !== drive.rootFolder)
+          throw new BadRequestException(
+            `folder with given id ${args.parentId} not found`,
+          );
+      }
+      folder.parent = parent;
+      return await this.folderRepo.save(folder);
+    }
+  }
+
+  async deleteFolder(id: string, profile: any) {
+    const folder = await this.folderRepo.findOne({
+      where: {
+        id,
+      },
+    });
+    const drive = await this.getDriveByProfile(profile.id);
+    if (!folder)
+      throw new BadRequestException(`folder with id ${id} not found`);
+    if (folder.id === drive.rootFolder.id)
+      throw new BadRequestException(`cannot delete root folder`);
+    if (folder.rootFolder !== drive.rootFolder)
+      throw new BadRequestException(`folder with id ${id} not found`);
+
+    return await this.folderRepo.remove(folder);
   }
 }

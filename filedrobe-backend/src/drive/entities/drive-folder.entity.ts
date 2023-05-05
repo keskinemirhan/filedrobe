@@ -2,6 +2,7 @@ import {
   Column,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -30,7 +31,7 @@ export class DriveFolder {
   @TreeParent()
   parent: DriveFolder;
 
-  @OneToOne(() => DriveFolder)
+  @ManyToOne(() => DriveFolder)
   @JoinColumn()
   rootFolder: DriveFolder;
 
