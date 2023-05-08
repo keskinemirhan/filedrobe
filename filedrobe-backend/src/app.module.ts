@@ -1,30 +1,21 @@
-import { Module } from '@nestjs/common';
-import { UsersModule } from './user/user.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './user/entities/user.entity';
-import { AuthModule } from './auth/auth.module';
-import { ProfileModule } from './profile/profile.module';
-import { Profile } from './profile/entities/profile.entity';
-import { DriveModule } from './drive/drive.module';
-import { SchematicsModule } from './schematics/schematics.module';
-import { UserDrive } from './drive/entities/user-drive.entity';
-import { DriveFolder } from './drive/entities/drive-folder.entity';
-import { DriveFile } from './drive/entities/drive-file.entity';
-import { FilePermission } from './drive/entities/file-permission.entity';
-import { Schema } from './schematics/entities/schema.entity';
-import { Tag } from './schematics/entities/tag.entity';
-import { Group } from './schematics/entities/group.entity';
-
+import { Module } from "@nestjs/common";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { User } from "./api/modules/user/entities/user.entity";
+import { Profile } from "./api/modules/profile/entities/profile.entity";
+import { DriveFolder } from "./api/modules/drive/entities/drive-folder.entity";
+import { UserDrive } from "./api/modules/drive/entities/user-drive.entity";
+import { DriveFile } from "./api/modules/drive/entities/drive-file.entity";
+import { FilePermission } from "./api/modules/drive/entities/file-permission.entity";
+import { Schema } from "./api/modules/schematics/entities/schema.entity";
+import { Tag } from "./api/modules/schematics/entities/tag.entity";
+import { Group } from "./api/modules/schematics/entities/group.entity";
+import { JsonApiModule } from "./api/jsonapi/jsonapi.module";
+import { EndpointModule } from "./endpoints/endpoint.module";
 @Module({
   imports: [
-    SchematicsModule,
-    DriveModule,
-    ProfileModule,
-    AuthModule,
-    UsersModule,
     TypeOrmModule.forRoot({
-      type: 'sqlite',
-      database: 'db.sqlite',
+      type: "sqlite",
+      database: "db.sqlite",
       synchronize: true,
       entities: [
         User,
@@ -38,9 +29,8 @@ import { Group } from './schematics/entities/group.entity';
         Group,
       ],
     }),
-    ProfileModule,
-    DriveModule,
-    SchematicsModule,
+    JsonApiModule,
+    EndpointModule,
   ],
   controllers: [],
   providers: [],
