@@ -1,15 +1,15 @@
-import { User } from 'src/user/entities/user.entity';
+import { User } from "src/user/entities/user.entity";
 import {
   Column,
   Entity,
   JoinTable,
   ManyToMany,
   PrimaryGeneratedColumn,
-} from 'typeorm';
+} from "typeorm";
 
 @Entity()
 export class FilePermission {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column()

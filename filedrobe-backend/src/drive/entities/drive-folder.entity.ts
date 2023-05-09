@@ -9,20 +9,20 @@ import {
   Tree,
   TreeChildren,
   TreeParent,
-} from 'typeorm';
-import { DriveFile } from './drive-file.entity';
-import { FilePermission } from './file-permission.entity';
+} from "typeorm";
+import { DriveFile } from "./drive-file.entity";
+import { FilePermission } from "./file-permission.entity";
 
 @Entity()
-@Tree('closure-table')
+@Tree("closure-table")
 export class DriveFolder {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column()
   name: string;
 
-  @OneToMany(() => DriveFile, (file) => file.folder)
+  @OneToMany(() => DriveFile, (file) => file.folder, { eager: true })
   files: DriveFile[];
 
   @TreeChildren()
