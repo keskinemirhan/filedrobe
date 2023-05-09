@@ -157,8 +157,11 @@ export class DriveController {
     @Req() req: any
   ) {
     return await this.driveService.updateFileAttributes(req.user.profile, {
+      fileId,
       newName: updateFileDto.name,
       folderId: updateFileDto.folderId,
+      users: updateFileDto.users,
+      isPublic: updateFileDto.isPublic,
     });
   }
 

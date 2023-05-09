@@ -10,10 +10,12 @@ import { ProfileService } from "src/profile/profile.service";
 import { DriveFolder } from "./entities/drive-folder.entity";
 import { DriveFile } from "./entities/drive-file.entity";
 import { createReadStream, unlink } from "fs";
+import { UserService } from "src/user/user.service";
 
 @Injectable()
 export class DriveService {
   constructor(
+    private usersService: UserService,
     @InjectRepository(UserDrive) private driveRepo: Repository<UserDrive>,
     @InjectRepository(DriveFolder) private folderRepo: Repository<DriveFolder>,
     @InjectRepository(DriveFolder)
@@ -161,8 +163,14 @@ export class DriveService {
     const drive = await this.getDriveByProfile(profile.id);
     const folder = await this.getFolder(folderId, profile);
     const folderFiles = await this.fileRepo.find({ where: { folder } });
-    if (folderFiles.length) throw new BadRequestException("file name exists");
-    const driveFile = this.fileRepo.create({ name, dir, drive, folder });
+    if (folderFiles.some((item) => item.name === name))
+      throw new BadRequestException("file name exists");
+    const driveFile = this.fileRepo.create({
+      name,
+      dir,
+      drive,
+      folder,
+    });
     return await this.fileRepo.save(driveFile);
   }
 
@@ -209,6 +217,8 @@ export class DriveService {
       fileId?: string;
       newName?: string;
       folderId?: string;
+      isPublic?: boolean;
+      users: string[];
     }
   ) {
     const drive = await this.getDriveByProfile(profile.id);
@@ -225,6 +235,9 @@ export class DriveService {
         where: {
           id: options.folderId,
         },
+        relations: {
+          rootFolder: true,
+        },
       });
       if (folder.rootFolder.id !== drive.rootFolder.id)
         throw new BadRequestException(
@@ -234,6 +247,17 @@ export class DriveService {
     }
     if (options.newName) {
       file.name = options.newName;
+    }
+    if (options.isPublic !== undefined) {
+      file.isPublic = options.isPublic;
+    }
+    if (options.users.length) {
+      const users = [];
+      options.users.forEach(async (id) => {
+        const user = await this.usersService.findById(id);
+        users.push(user);
+      });
+      file.users = users;
     }
     return await this.fileRepo.save(file);
   }

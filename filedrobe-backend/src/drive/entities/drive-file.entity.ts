@@ -24,8 +24,8 @@ export class DriveFile {
   @ManyToOne(() => DriveFolder, (folder) => folder.files)
   folder: DriveFolder;
 
-  @Column({ default: 0 })
-  accessType: number;
+  @Column({ default: false })
+  isPublic: boolean;
 
   @ManyToMany(() => User)
   @JoinTable()
