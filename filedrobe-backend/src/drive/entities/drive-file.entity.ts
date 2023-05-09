@@ -1,18 +1,18 @@
 import {
   Column,
   Entity,
-  JoinColumn,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
-  OneToOne,
   PrimaryGeneratedColumn,
-} from 'typeorm';
-import { DriveFolder } from './drive-folder.entity';
-import { FilePermission } from './file-permission.entity';
-import { UserDrive } from './user-drive.entity';
+} from "typeorm";
+import { DriveFolder } from "./drive-folder.entity";
+import { UserDrive } from "./user-drive.entity";
+import { User } from "src/user/entities/user.entity";
 
 @Entity()
 export class DriveFile {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column()
@@ -24,9 +24,12 @@ export class DriveFile {
   @ManyToOne(() => DriveFolder, (folder) => folder.files)
   folder: DriveFolder;
 
-  @OneToOne(() => FilePermission)
-  @JoinColumn()
-  permission: FilePermission;
+  @Column({ default: 0 })
+  accessType: number;
+
+  @ManyToMany(() => User)
+  @JoinTable()
+  users: User[];
 
   @ManyToOne(() => UserDrive, (drive) => drive.files)
   drive: UserDrive;

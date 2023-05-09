@@ -2,6 +2,8 @@ import {
   Column,
   Entity,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   OneToOne,
@@ -11,7 +13,7 @@ import {
   TreeParent,
 } from "typeorm";
 import { DriveFile } from "./drive-file.entity";
-import { FilePermission } from "./file-permission.entity";
+import { User } from "src/user/entities/user.entity";
 
 @Entity()
 @Tree("closure-table")
@@ -35,7 +37,10 @@ export class DriveFolder {
   @JoinColumn()
   rootFolder: DriveFolder;
 
-  @OneToOne(() => FilePermission)
-  @JoinColumn()
-  permission: FilePermission;
+  @Column({ default: 0 })
+  accessType: number;
+
+  @ManyToMany(() => User)
+  @JoinTable()
+  users: User[];
 }
