@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Req,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -86,6 +87,17 @@ export class DriveController {
   }
 
   //FILE
+
+  @UseGuards(AuthGuard)
+  @Get("file/download/:fileId")
+  async downloadFile(
+    @Res() res: any,
+    @Param("fileId") fileId: string,
+    @Req() req: any
+  ) {
+    const file = await this.driveService.streamFile(fileId, req.user.profile);
+    file.pipe(res);
+  }
 
   @UseGuards(AuthGuard)
   @Post("upload/:folderId")

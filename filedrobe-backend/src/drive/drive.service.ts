@@ -9,7 +9,7 @@ import { Repository, TreeRepository } from "typeorm";
 import { ProfileService } from "src/profile/profile.service";
 import { DriveFolder } from "./entities/drive-folder.entity";
 import { DriveFile } from "./entities/drive-file.entity";
-import { unlink } from "fs";
+import { createReadStream, unlink } from "fs";
 
 @Injectable()
 export class DriveService {
@@ -250,5 +250,17 @@ export class DriveService {
       throw new BadRequestException(`file with id ${fileId} not found`);
     await unlink(file.dir, () => {});
     return await this.fileRepo.remove(file);
+  }
+
+  async streamFile(fileId: string, profile: any) {
+    const drive = await this.getDriveByProfile(profile.id);
+    const file = await this.fileRepo.findOne({
+      where: {
+        id: fileId,
+        drive,
+      },
+    });
+    if (!file) throw new BadRequestException(`file with id ${fileId}`);
+    return createReadStream(file.dir);
   }
 }
