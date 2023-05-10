@@ -13,6 +13,12 @@ import { createReadStream, unlink } from "fs";
 import { UserService } from "src/user/user.service";
 import { DriveFolder } from "./entities/drive-folder.entity";
 
+class FileRelations {
+  users = false;
+  folder = false;
+  drive = false;
+}
+
 @Injectable()
 export class FileService {
   constructor(
@@ -24,6 +30,9 @@ export class FileService {
     @InjectRepository(DriveFile) private fileRepo: Repository<DriveFile>,
     @InjectRepository(DriveFolder) private folderRepo: Repository<DriveFolder>
   ) {}
+
+  defaultRelations = new FileRelations();
+
   async uploadFile(file: Express.Multer.File, folderId: string, profile: any) {
     const name = file.originalname;
     const dir = file.destination + "/" + file.filename;
@@ -41,22 +50,27 @@ export class FileService {
     return await this.fileRepo.save(driveFile);
   }
 
-  async getFile(fileId: string, profile: any) {
+  async getFile(
+    fileId: string,
+    profile: any,
+    relations = this.defaultRelations
+  ) {
     const drive = await this.driveService.getDriveByProfileId(profile.id);
     const file = await this.fileRepo.findOne({
       where: {
         id: fileId,
         drive,
       },
+      relations,
     });
     if (!file)
       throw new BadRequestException(`file with id ${fileId} not found `);
     return file;
   }
 
-  async getAllFile(profile: any) {
+  async getAllFile(profile: any, relations = this.defaultRelations) {
     const drive = await this.driveService.getDriveByProfileId(profile.id);
-    const files = await this.fileRepo.find({ where: { drive } });
+    const files = await this.fileRepo.find({ where: { drive }, relations });
     return files;
   }
 
