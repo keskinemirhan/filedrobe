@@ -9,6 +9,14 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { DriveFolder } from "./entities/drive-folder.entity";
 import { Repository, TreeRepository } from "typeorm";
 
+class FolderRelations {
+  files = false;
+  children = false;
+  parent = false;
+  rootFolder = false;
+  users = false;
+}
+
 export class FolderService {
   constructor(
     @Inject(forwardRef(() => DriveService))
@@ -17,13 +25,15 @@ export class FolderService {
     @InjectRepository(DriveFolder)
     private folderTreeRepo: TreeRepository<DriveFolder>
   ) {}
+
+  defaultRelations = new FolderRelations();
   async createRootFolder() {
     const rootFolder = await this.folderRepo.create({ name: "root" });
     const saved = await this.folderRepo.save(rootFolder);
     return saved;
   }
 
-  async getFolderById(folderId: string) {
+  async getFolderById(folderId: string, relations = this.defaultRelations) {
     const folder = await this.folderRepo.findOne({
       where: { id: folderId },
       relations: {
@@ -51,7 +61,7 @@ export class FolderService {
     return await this.folderRepo.save(folder);
   }
 
-  async getFolder(id: string, profile: any) {
+  async getFolder(id: string, profile: any, relations = this.defaultRelations) {
     const folder = await this.folderRepo.findOne({
       where: { id },
       relations: {
