@@ -21,6 +21,7 @@ import { diskStorage } from "multer";
 import { UpdateFileDto } from "./dto/update-file.dto";
 import { FolderService } from "./folder.service";
 import { FileService } from "./file.service";
+import { Profile } from "src/profile/decorators/profile.decorator";
 
 @Controller("drive")
 export class DriveController {
@@ -38,7 +39,7 @@ export class DriveController {
   @UseGuards(AuthGuard)
   @Get()
   async getMyDrive(@Req() req: any) {
-    return await this.driveService.getDriveByProfile(req.user.profile.id);
+    return await this.driveService.getDriveByProfileId(req.user.profile.id);
   }
 
   //folder
@@ -64,8 +65,8 @@ export class DriveController {
 
   @UseGuards(AuthGuard)
   @Get("folder/:id")
-  async getFolder(@Req() req: any, @Param("id") id: string) {
-    return await this.folderService.getFolder(id, req.user.profile);
+  async getFolder(@Profile() profile: any, @Param("id") id: string) {
+    return await this.folderService.getFolder(id, profile);
   }
 
   @UseGuards(AuthGuard)
@@ -87,8 +88,8 @@ export class DriveController {
 
   @UseGuards(AuthGuard)
   @Delete("folder/:id")
-  async deleteFolder(@Req() req: any, @Param("id") id: string) {
-    return await this.folderService.deleteFolder(id, req.user.profile);
+  async deleteFolder(@Profile() profile: any, @Param("id") id: string) {
+    return await this.folderService.deleteFolder(id, profile);
   }
 
   //FILE
@@ -98,9 +99,9 @@ export class DriveController {
   async downloadFile(
     @Res() res: any,
     @Param("fileId") fileId: string,
-    @Req() req: any
+    @Profile() profile: any
   ) {
-    const file = await this.fileService.streamFile(fileId, req.user.profile);
+    const file = await this.fileService.streamFile(fileId, profile);
     file.pipe(res);
   }
 
@@ -115,22 +116,22 @@ export class DriveController {
   )
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
-    @Req() req: any,
+    @Profile() profile: any,
     @Param("folderId") folderId: string
   ) {
-    return await this.fileService.uploadFile(file, folderId, req.user.profile);
+    return await this.fileService.uploadFile(file, folderId, profile);
   }
 
   @UseGuards(AuthGuard)
   @Get("file/:id")
-  async getFile(@Param("id") fileId: string, @Req() req: any) {
-    return await this.fileService.getFile(fileId, req.user.profile);
+  async getFile(@Param("id") fileId: string, @Profile() profile: any) {
+    return await this.fileService.getFile(fileId, profile);
   }
 
   @UseGuards(AuthGuard)
   @Get("file")
-  async getAllFile(@Req() req: any) {
-    return await this.fileService.getAllFile(req.user.profile);
+  async getAllFile(@Profile() profile: any) {
+    return await this.fileService.getAllFile(profile);
   }
 
   @UseGuards(AuthGuard)
@@ -145,13 +146,9 @@ export class DriveController {
   async updateFileContent(
     @UploadedFile() newFile: Express.Multer.File,
     @Param("id") fileId: string,
-    @Req() req: any
+    @Profile() profile: any
   ) {
-    return await this.fileService.updateFileContent(
-      newFile,
-      fileId,
-      req.user.profile
-    );
+    return await this.fileService.updateFileContent(newFile, fileId, profile);
   }
 
   @UseGuards(AuthGuard)
@@ -159,9 +156,9 @@ export class DriveController {
   async updateFileAttributes(
     @Param("id ") fileId: string,
     @Body() updateFileDto: UpdateFileDto,
-    @Req() req: any
+    @Profile() profile: any
   ) {
-    return await this.fileService.updateFileAttributes(req.user.profile, {
+    return await this.fileService.updateFileAttributes(profile, {
       fileId,
       newName: updateFileDto.name,
       folderId: updateFileDto.folderId,
@@ -172,7 +169,7 @@ export class DriveController {
 
   @UseGuards(AuthGuard)
   @Delete("file/:id")
-  async deleteFile(@Param("id") fileId: string, @Req() req: any) {
-    return await this.fileService.deleteFile(fileId, req.user.profile);
+  async deleteFile(@Param("id") fileId: string, @Profile() profile: any) {
+    return await this.fileService.deleteFile(fileId, profile);
   }
 }
