@@ -37,7 +37,7 @@ export class DriveService {
     return drive;
   }
 
-  async getDriveByProfile(
+  async getDriveByProfileId(
     profileId: string,
     relations = this.defaultRelations
   ) {

@@ -27,7 +27,7 @@ export class FileService {
   async uploadFile(file: Express.Multer.File, folderId: string, profile: any) {
     const name = file.originalname;
     const dir = file.destination + "/" + file.filename;
-    const drive = await this.driveService.getDriveByProfile(profile.id);
+    const drive = await this.driveService.getDriveByProfileId(profile.id);
     const folder = await this.folderService.getFolder(folderId, profile);
     const folderFiles = await this.fileRepo.find({ where: { folder } });
     if (folderFiles.some((item) => item.name === name))
@@ -42,7 +42,7 @@ export class FileService {
   }
 
   async getFile(fileId: string, profile: any) {
-    const drive = await this.driveService.getDriveByProfile(profile.id);
+    const drive = await this.driveService.getDriveByProfileId(profile.id);
     const file = await this.fileRepo.findOne({
       where: {
         id: fileId,
@@ -55,7 +55,7 @@ export class FileService {
   }
 
   async getAllFile(profile: any) {
-    const drive = await this.driveService.getDriveByProfile(profile.id);
+    const drive = await this.driveService.getDriveByProfileId(profile.id);
     const files = await this.fileRepo.find({ where: { drive } });
     return files;
   }
@@ -65,7 +65,7 @@ export class FileService {
     fileId: string,
     profile: any
   ) {
-    const drive = await this.driveService.getDriveByProfile(profile.id);
+    const drive = await this.driveService.getDriveByProfileId(profile.id);
     const oldFile = await this.fileRepo.findOne({
       where: { id: fileId, drive },
     });
@@ -88,7 +88,7 @@ export class FileService {
       users: string[];
     }
   ) {
-    const drive = await this.driveService.getDriveByProfile(profile.id);
+    const drive = await this.driveService.getDriveByProfileId(profile.id);
     const file = await this.fileRepo.findOne({
       where: {
         id: options.fileId,
@@ -130,7 +130,7 @@ export class FileService {
   }
 
   async deleteFile(fileId: string, profile: any) {
-    const drive = await this.driveService.getDriveByProfile(profile.id);
+    const drive = await this.driveService.getDriveByProfileId(profile.id);
     const file = await this.fileRepo.findOne({
       where: {
         id: fileId,
@@ -144,7 +144,7 @@ export class FileService {
   }
 
   async streamFile(fileId: string, profile: any) {
-    const drive = await this.driveService.getDriveByProfile(profile.id);
+    const drive = await this.driveService.getDriveByProfileId(profile.id);
     const file = await this.fileRepo.findOne({
       where: {
         id: fileId,

@@ -40,7 +40,7 @@ export class FolderService {
 
   async createFolder(name: string, parentId: string, profile: any) {
     const parent = await this.getFolderById(parentId);
-    const drive = await this.driveService.getDriveByProfile(profile.id);
+    const drive = await this.driveService.getDriveByProfileId(profile.id);
     const rootFolder = drive.rootFolder;
     if (parent.rootFolder) {
       if (!(parent.rootFolder.id === rootFolder.id))
@@ -58,7 +58,7 @@ export class FolderService {
         rootFolder: true,
       },
     });
-    const drive = await this.driveService.getDriveByProfile(profile.id);
+    const drive = await this.driveService.getDriveByProfileId(profile.id);
 
     if (!folder)
       throw new BadRequestException(`folder with id ${id} not found`);
@@ -74,7 +74,7 @@ export class FolderService {
     args: { name?: string; parentId?: string },
     profile: any
   ) {
-    const drive = await this.driveService.getDriveByProfile(profile.id);
+    const drive = await this.driveService.getDriveByProfileId(profile.id);
     const folder = await this.folderRepo.findOne({
       where: { id },
       relations: {
@@ -112,7 +112,7 @@ export class FolderService {
         id,
       },
     });
-    const drive = await this.driveService.getDriveByProfile(profile.id);
+    const drive = await this.driveService.getDriveByProfileId(profile.id);
     if (!folder)
       throw new BadRequestException(`folder with id ${id} not found`);
     if (folder.id === drive.rootFolder.id)
