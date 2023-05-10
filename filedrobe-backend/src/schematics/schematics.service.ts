@@ -1,8 +1,95 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Tag } from "./entities/tag.entity";
+import { Schema } from "./entities/schema.entity";
 import { Repository } from "typeorm";
-import { UserDrive } from "src/drive/entities/user-drive.entity";
+
+class SchemaRelations {
+  groups = false;
+  tags = false;
+  drive = false;
+}
 
 @Injectable()
-export class SchematicsService {}
+export class SchematicsService {
+  constructor(
+    @InjectRepository(Schema) private schemaRepo: Repository<Schema>
+  ) {}
+
+  defaultRelations = new SchemaRelations();
+
+  async getSchemaById(schemaId: string, relations = this.defaultRelations) {
+    const schema = await this.schemaRepo.findOne({
+      where: { id: schemaId },
+      relations,
+    });
+
+    return schema;
+  }
+
+  async getSchemaByIdDrive(
+    schemaId: string,
+    drive: any,
+    relations = this.defaultRelations
+  ) {
+    const schema = await this.schemaRepo.findOne({
+      where: { id: schemaId, drive },
+      relations,
+    });
+    return schema;
+  }
+
+  async getAllSchema(relations = this.defaultRelations) {
+    return await this.schemaRepo.find({ relations });
+  }
+
+  async getAllSchemaDrive(drive: any, relations = this.defaultRelations) {
+    return await this.schemaRepo.find({ where: { drive }, relations });
+  }
+
+  async createSchema(name: string) {
+    const schema = this.schemaRepo.create({ name });
+    return await this.schemaRepo.save(schema);
+  }
+
+  async createSchemaDrive(name: string, drive: any) {
+    const schema = this.schemaRepo.create({ drive, name });
+    return await this.schemaRepo.save(schema);
+  }
+
+  async deleteSchema(schemaId: string) {
+    const schema = await this.schemaRepo.findOne({ where: { id: schemaId } });
+    if (!schema)
+      throw new BadRequestException(`schema with id ${schemaId} not found`);
+    return await this.schemaRepo.remove(schema);
+  }
+
+  async deleteSchemaDrive(schemaId: string, drive: any) {
+    const schema = await this.schemaRepo.findOne({
+      where: { id: schemaId, drive },
+    });
+    if (!schema)
+      throw new BadRequestException(`schema with id ${schemaId} not found`);
+    return await this.schemaRepo.remove(schema);
+  }
+
+  //   async updateSchemaDrive(
+  //     schemaId: string,
+  //     drive: any,
+  //     options: { name?: string; tags?: string[]; groups?: string[] }
+  //   ) {
+  //     if (!options.name || !options.tags || !options.groups) return;
+  //     const schema = await this.schemaRepo.findOne({
+  //       where: { id: schemaId, drive },
+  //       relations: {
+  //         tags: Boolean(options.tags),
+  //         groups: Boolean(options.groups),
+  //       },
+  //     });
+  //     if (options.name) schema.name = options.name;
+  //     if (options.tags) {
+  //       options.tags.forEach((tagId) => {
+  //         const tag; // continue here when tag service ready
+  //       });
+  //     }
+  //   }
+}
