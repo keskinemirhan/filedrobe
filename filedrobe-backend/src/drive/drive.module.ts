@@ -7,6 +7,8 @@ import { ProfileModule } from "src/profile/profile.module";
 import { DriveService } from "./drive.service";
 import { DriveController } from "./drive.controller";
 import { UsersModule } from "src/user/user.module";
+import { FileService } from "./file.service";
+import { FolderService } from "./folder.service";
 
 @Module({
   imports: [
@@ -14,8 +16,8 @@ import { UsersModule } from "src/user/user.module";
     ProfileModule,
     UsersModule,
   ],
-  providers: [DriveService],
+  providers: [DriveService, FileService, FolderService],
   controllers: [DriveController],
-  exports: [DriveService],
+  exports: [DriveService, FileService, FolderService],
 })
 export class DriveModule {}

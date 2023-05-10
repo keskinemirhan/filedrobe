@@ -1,40 +1,46 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from "@nestjs/common";
+import { Inject, Injectable, forwardRef } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UserDrive } from "./entities/user-drive.entity";
-import { Repository, TreeRepository } from "typeorm";
+import { Repository } from "typeorm";
 import { ProfileService } from "src/profile/profile.service";
 import { DriveFolder } from "./entities/drive-folder.entity";
-import { DriveFile } from "./entities/drive-file.entity";
-import { createReadStream, unlink } from "fs";
-import { UserService } from "src/user/user.service";
+import { FolderService } from "./folder.service";
+
+class DriveRelations {
+  tags = false;
+  files = false;
+  rootFolder = false;
+  schemas = false;
+}
 
 @Injectable()
 export class DriveService {
   constructor(
-    private usersService: UserService,
+    @Inject(forwardRef(() => FolderService))
+    private folderService: FolderService,
     @InjectRepository(UserDrive) private driveRepo: Repository<UserDrive>,
-    @InjectRepository(DriveFolder) private folderRepo: Repository<DriveFolder>,
     @InjectRepository(DriveFolder)
-    private folderTreeRepo: TreeRepository<DriveFolder>,
-    @InjectRepository(DriveFile) private fileRepo: Repository<DriveFile>,
     private profileService: ProfileService
   ) {}
 
+  defaultRelations = new DriveRelations();
   //dev
-  async getAllDrive() {
-    return await this.driveRepo.find();
+  async getAllDrive(relations = this.defaultRelations) {
+    return await this.driveRepo.find({ relations });
   }
 
-  async getDriveById(driveId: string) {
-    const drive = await this.driveRepo.findOne({ where: { id: driveId } });
+  async getDriveById(driveId: string, relations = this.defaultRelations) {
+    const drive = await this.driveRepo.findOne({
+      where: { id: driveId },
+      relations,
+    });
     return drive;
   }
 
-  async getDriveByProfile(profileId: string) {
+  async getDriveByProfile(
+    profileId: string,
+    relations = this.defaultRelations
+  ) {
     const profile = await this.profileService.getProfileById(profileId, true);
     const drive = profile.drive;
     return drive;
@@ -42,249 +48,8 @@ export class DriveService {
 
   async createDrive() {
     const drive = await this.driveRepo.create();
-    const rootFolder = await this.createRootFolder();
+    const rootFolder = await this.folderService.createRootFolder();
     drive.rootFolder = rootFolder;
     return this.driveRepo.save(drive);
-  }
-
-  //FOLDER
-
-  async createRootFolder() {
-    const rootFolder = await this.folderRepo.create({ name: "root" });
-    const saved = await this.folderRepo.save(rootFolder);
-    return saved;
-  }
-
-  async getFolderById(folderId: string) {
-    const folder = await this.folderRepo.findOne({
-      where: { id: folderId },
-      relations: {
-        rootFolder: true,
-      },
-    });
-    return folder;
-  }
-
-  async getAllFolderTree() {
-    const tree = await this.folderTreeRepo.findTrees();
-    return tree;
-  }
-
-  async createFolder(name: string, parentId: string, profile: any) {
-    const parent = await this.getFolderById(parentId);
-    const drive = await this.getDriveByProfile(profile.id);
-    const rootFolder = drive.rootFolder;
-    if (parent.rootFolder) {
-      if (!(parent.rootFolder.id === rootFolder.id))
-        throw new NotFoundException(`folder with id ${parent.id} not found`);
-    } else if (!(rootFolder.id === parent.id))
-      throw new NotFoundException(`folder with id ${parent.id} not found`);
-    const folder = this.folderRepo.create({ name, rootFolder, parent });
-    return await this.folderRepo.save(folder);
-  }
-
-  async getFolder(id: string, profile: any) {
-    const folder = await this.folderRepo.findOne({
-      where: { id },
-      relations: {
-        rootFolder: true,
-      },
-    });
-    const drive = await this.getDriveByProfile(profile.id);
-
-    if (!folder)
-      throw new BadRequestException(`folder with id ${id} not found`);
-    if (folder.id !== drive.rootFolder.id) {
-      if (folder.rootFolder.id !== drive.rootFolder.id)
-        throw new BadRequestException(`folder with id ${id} not found`);
-    }
-    return folder;
-  }
-
-  async updateFolder(
-    id: string,
-    args: { name?: string; parentId?: string },
-    profile: any
-  ) {
-    const drive = await this.getDriveByProfile(profile.id);
-    const folder = await this.folderRepo.findOne({
-      where: { id },
-      relations: {
-        rootFolder: true,
-      },
-    });
-    if (!folder)
-      throw new BadRequestException(`folder with id ${id} not found`);
-    if (folder.rootFolder.id !== drive.rootFolder.id)
-      throw new BadRequestException(`folder with id ${id} not found`);
-
-    if (args.name) folder.name = args.name;
-    if (args.parentId) {
-      const parent = await this.folderRepo.findOne({
-        where: { id: args.parentId },
-      });
-      if (!parent)
-        throw new BadRequestException(
-          `folder with given id ${args.parentId} not found`
-        );
-      if (parent.id !== drive.rootFolder.id) {
-        if (parent.rootFolder !== drive.rootFolder)
-          throw new BadRequestException(
-            `folder with given id ${args.parentId} not found`
-          );
-      }
-      folder.parent = parent;
-      return await this.folderRepo.save(folder);
-    }
-  }
-
-  async deleteFolder(id: string, profile: any) {
-    const folder = await this.folderRepo.findOne({
-      where: {
-        id,
-      },
-    });
-    const drive = await this.getDriveByProfile(profile.id);
-    if (!folder)
-      throw new BadRequestException(`folder with id ${id} not found`);
-    if (folder.id === drive.rootFolder.id)
-      throw new BadRequestException(`cannot delete root folder`);
-    if (folder.rootFolder !== drive.rootFolder)
-      throw new BadRequestException(`folder with id ${id} not found`);
-
-    return await this.folderRepo.remove(folder);
-  }
-
-  //FILE
-
-  async uploadFile(file: Express.Multer.File, folderId: string, profile: any) {
-    const name = file.originalname;
-    const dir = file.destination + "/" + file.filename;
-    const drive = await this.getDriveByProfile(profile.id);
-    const folder = await this.getFolder(folderId, profile);
-    const folderFiles = await this.fileRepo.find({ where: { folder } });
-    if (folderFiles.some((item) => item.name === name))
-      throw new BadRequestException("file name exists");
-    const driveFile = this.fileRepo.create({
-      name,
-      dir,
-      drive,
-      folder,
-    });
-    return await this.fileRepo.save(driveFile);
-  }
-
-  async getFile(fileId: string, profile: any) {
-    const drive = await this.getDriveByProfile(profile.id);
-    const file = await this.fileRepo.findOne({
-      where: {
-        id: fileId,
-        drive,
-      },
-    });
-    if (!file)
-      throw new BadRequestException(`file with id ${fileId} not found `);
-    return file;
-  }
-
-  async getAllFile(profile: any) {
-    const drive = await this.getDriveByProfile(profile.id);
-    const files = await this.fileRepo.find({ where: { drive } });
-    return files;
-  }
-
-  async updateFileContent(
-    newFile: Express.Multer.File,
-    fileId: string,
-    profile: any
-  ) {
-    const drive = await this.getDriveByProfile(profile.id);
-    const oldFile = await this.fileRepo.findOne({
-      where: { id: fileId, drive },
-    });
-    if (!oldFile)
-      throw new BadRequestException(`file with  ${fileId} does not exist`);
-    const oldDir = oldFile.dir;
-    await unlink(oldDir, () => {});
-    const newDir = newFile.destination + "/" + newFile.filename;
-    oldFile.dir = newDir;
-    return await this.fileRepo.save(oldFile);
-  }
-
-  async updateFileAttributes(
-    profile: any,
-    options: {
-      fileId?: string;
-      newName?: string;
-      folderId?: string;
-      isPublic?: boolean;
-      users: string[];
-    }
-  ) {
-    const drive = await this.getDriveByProfile(profile.id);
-    const file = await this.fileRepo.findOne({
-      where: {
-        id: options.fileId,
-        drive,
-      },
-    });
-    if (!file)
-      throw new BadRequestException(`file with id ${options.fileId} not found`);
-    if (options.folderId) {
-      const folder = await this.folderRepo.findOne({
-        where: {
-          id: options.folderId,
-        },
-        relations: {
-          rootFolder: true,
-        },
-      });
-      if (folder.rootFolder.id !== drive.rootFolder.id)
-        throw new BadRequestException(
-          `folder with id ${options.folderId} not found`
-        );
-      file.folder = folder;
-    }
-    if (options.newName) {
-      file.name = options.newName;
-    }
-    if (options.isPublic !== undefined) {
-      file.isPublic = options.isPublic;
-    }
-    if (options.users.length) {
-      const users = [];
-      options.users.forEach(async (id) => {
-        const user = await this.usersService.findById(id);
-        users.push(user);
-      });
-      file.users = users;
-    }
-    return await this.fileRepo.save(file);
-  }
-
-  async deleteFile(fileId: string, profile: any) {
-    const drive = await this.getDriveByProfile(profile.id);
-    const file = await this.fileRepo.findOne({
-      where: {
-        id: fileId,
-        drive,
-      },
-    });
-    if (!file)
-      throw new BadRequestException(`file with id ${fileId} not found`);
-    await unlink(file.dir, () => {});
-    return await this.fileRepo.remove(file);
-  }
-
-  async streamFile(fileId: string, profile: any) {
-    const drive = await this.getDriveByProfile(profile.id);
-    const file = await this.fileRepo.findOne({
-      where: {
-        id: fileId,
-        drive,
-      },
-    });
-    if (!file) throw new BadRequestException(`file with id ${fileId}`);
-    return createReadStream(file.dir);
   }
 }

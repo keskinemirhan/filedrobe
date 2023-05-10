@@ -18,12 +18,17 @@ import { CreateFolderDto } from "./dto/create-folder.dto";
 import { UpdateFolderDto } from "./dto/update-folder.dto";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { diskStorage } from "multer";
-import { CreateFileDto } from "./dto/create-file.dto";
 import { UpdateFileDto } from "./dto/update-file.dto";
+import { FolderService } from "./folder.service";
+import { FileService } from "./file.service";
 
 @Controller("drive")
 export class DriveController {
-  constructor(private driveService: DriveService) {}
+  constructor(
+    private driveService: DriveService,
+    private folderService: FolderService,
+    private fileService: FileService
+  ) {}
   //dev
   @Get("all")
   async getAllDrive() {
@@ -41,7 +46,7 @@ export class DriveController {
   //dev
   @Get("folder/tree")
   async getAllFolderTree() {
-    return await this.driveService.getAllFolderTree();
+    return await this.folderService.getAllFolderTree();
   }
 
   @UseGuards(AuthGuard)
@@ -50,7 +55,7 @@ export class DriveController {
     @Req() req: any,
     @Body() createFolderDto: CreateFolderDto
   ) {
-    return await this.driveService.createFolder(
+    return await this.folderService.createFolder(
       createFolderDto.name,
       createFolderDto.parentId,
       req.user.profile
@@ -60,7 +65,7 @@ export class DriveController {
   @UseGuards(AuthGuard)
   @Get("folder/:id")
   async getFolder(@Req() req: any, @Param("id") id: string) {
-    return await this.driveService.getFolder(id, req.user.profile);
+    return await this.folderService.getFolder(id, req.user.profile);
   }
 
   @UseGuards(AuthGuard)
@@ -70,7 +75,7 @@ export class DriveController {
     @Param("id") id: string,
     @Body() updateFolderDto: UpdateFolderDto
   ) {
-    return await this.driveService.updateFolder(
+    return await this.folderService.updateFolder(
       id,
       {
         name: updateFolderDto.name,
@@ -83,7 +88,7 @@ export class DriveController {
   @UseGuards(AuthGuard)
   @Delete("folder/:id")
   async deleteFolder(@Req() req: any, @Param("id") id: string) {
-    return await this.driveService.deleteFolder(id, req.user.profile);
+    return await this.folderService.deleteFolder(id, req.user.profile);
   }
 
   //FILE
@@ -95,7 +100,7 @@ export class DriveController {
     @Param("fileId") fileId: string,
     @Req() req: any
   ) {
-    const file = await this.driveService.streamFile(fileId, req.user.profile);
+    const file = await this.fileService.streamFile(fileId, req.user.profile);
     file.pipe(res);
   }
 
@@ -113,19 +118,19 @@ export class DriveController {
     @Req() req: any,
     @Param("folderId") folderId: string
   ) {
-    return await this.driveService.uploadFile(file, folderId, req.user.profile);
+    return await this.fileService.uploadFile(file, folderId, req.user.profile);
   }
 
   @UseGuards(AuthGuard)
   @Get("file/:id")
   async getFile(@Param("id") fileId: string, @Req() req: any) {
-    return await this.driveService.getFile(fileId, req.user.profile);
+    return await this.fileService.getFile(fileId, req.user.profile);
   }
 
   @UseGuards(AuthGuard)
   @Get("file")
   async getAllFile(@Req() req: any) {
-    return await this.driveService.getAllFile(req.user.profile);
+    return await this.fileService.getAllFile(req.user.profile);
   }
 
   @UseGuards(AuthGuard)
@@ -142,7 +147,7 @@ export class DriveController {
     @Param("id") fileId: string,
     @Req() req: any
   ) {
-    return await this.driveService.updateFileContent(
+    return await this.fileService.updateFileContent(
       newFile,
       fileId,
       req.user.profile
@@ -156,7 +161,7 @@ export class DriveController {
     @Body() updateFileDto: UpdateFileDto,
     @Req() req: any
   ) {
-    return await this.driveService.updateFileAttributes(req.user.profile, {
+    return await this.fileService.updateFileAttributes(req.user.profile, {
       fileId,
       newName: updateFileDto.name,
       folderId: updateFileDto.folderId,
@@ -168,6 +173,6 @@ export class DriveController {
   @UseGuards(AuthGuard)
   @Delete("file/:id")
   async deleteFile(@Param("id") fileId: string, @Req() req: any) {
-    return await this.driveService.deleteFile(fileId, req.user.profile);
+    return await this.fileService.deleteFile(fileId, req.user.profile);
   }
 }
