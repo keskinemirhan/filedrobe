@@ -1,7 +1,13 @@
-import { CallHandler, ExecutionContext, NestInterceptor } from "@nestjs/common";
+import {
+  CallHandler,
+  ExecutionContext,
+  Injectable,
+  NestInterceptor,
+} from "@nestjs/common";
 import { Observable } from "rxjs";
 import { DriveService } from "src/drive/drive.service";
 
+@Injectable()
 export class SchematicsInterceptor implements NestInterceptor {
   constructor(private driveService: DriveService) {}
   async intercept(context: ExecutionContext, next: CallHandler<any>) {
