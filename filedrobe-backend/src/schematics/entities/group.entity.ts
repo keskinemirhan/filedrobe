@@ -2,12 +2,14 @@ import {
   Column,
   Entity,
   JoinColumn,
+  JoinTable,
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { Tag } from "./tag.entity";
 import { Schema } from "./schema.entity";
+import { UserDrive } from "src/drive/entities/user-drive.entity";
 
 @Entity()
 export class Group {
@@ -21,6 +23,10 @@ export class Group {
   schema: Schema;
 
   @ManyToMany(() => Tag)
-  @JoinColumn()
+  @JoinTable()
   tags: Tag[];
+
+  @ManyToOne(() => UserDrive)
+  @JoinColumn()
+  drive: UserDrive;
 }
