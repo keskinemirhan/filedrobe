@@ -43,6 +43,8 @@ export class SchematicsService {
       where: { id: schemaId, drive },
       relations,
     });
+    if (!schema)
+      throw new BadRequestException(`schema with id ${schemaId} not found`);
     return schema;
   }
 
@@ -93,6 +95,8 @@ export class SchematicsService {
         groups: Boolean(options.groups),
       },
     });
+    if (!schema)
+      throw new BadRequestException(`schema with id ${schemaId} not found`);
     if (options.name) schema.name = options.name;
     if (options.tags) {
       const tags = [];
