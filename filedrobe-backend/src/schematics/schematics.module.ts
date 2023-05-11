@@ -8,14 +8,23 @@ import { DriveModule } from "src/drive/drive.module";
 import { TagService } from "./tag.service";
 import { GroupService } from "./group.service";
 import { SchematicsInterceptor } from "./interceptor/schematics.interceptor";
+import { SchematicsController } from "./schematics.controller";
+import { UsersModule } from "src/user/user.module";
+import { ProfileModule } from "src/profile/profile.module";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Schema, Tag, Group]), DriveModule],
+  imports: [
+    TypeOrmModule.forFeature([Schema, Tag, Group]),
+    DriveModule,
+    UsersModule,
+    ProfileModule,
+  ],
   providers: [
     SchematicsService,
     TagService,
     GroupService,
     SchematicsInterceptor,
   ],
+  controllers: [SchematicsController],
 })
 export class SchematicsModule {}
