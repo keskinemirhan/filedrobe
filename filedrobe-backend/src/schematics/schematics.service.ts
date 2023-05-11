@@ -87,7 +87,7 @@ export class SchematicsService {
     drive: any,
     options: { name?: string; tags?: string[]; groups?: string[] }
   ) {
-    if (!options.name || !options.tags || !options.groups) return;
+    if (!(options.name || options.tags || options.groups)) return;
     const schema = await this.schemaRepo.findOne({
       where: { id: schemaId, drive },
       relations: {
