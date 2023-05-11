@@ -18,14 +18,12 @@ export class GroupService {
     private schematicsService: SchematicsService,
     @Inject(forwardRef(() => TagService)) private tagService: TagService
   ) {}
-  async getGroupByIdSchema(groupId: string, schemaId: string, drive: any) {
-    const schema = await this.schematicsService.getSchemaByIdDrive(
-      schemaId,
-      drive
-    );
+  async getGroupByIdDrive(groupId: string, drive: any) {
     const group = await this.groupRepo.findOne({
-      where: { id: groupId, schema },
+      where: { id: groupId, drive },
     });
+    if (!group)
+      throw new BadRequestException(`group with id ${groupId} not found`);
     return group;
   }
 
@@ -49,13 +47,12 @@ export class GroupService {
     );
     if (!schema)
       throw new BadRequestException(`schema with id ${schemaId} not found`);
-    const group = this.groupRepo.create({ name, schema });
+    const group = this.groupRepo.create({ name, schema, drive });
     return await this.groupRepo.save(group);
   }
 
   async updateGroup(
     groupId: string,
-    schemaId: string,
     drive: any,
     options: {
       name?: string;
@@ -63,7 +60,7 @@ export class GroupService {
     }
   ) {
     if (!options.name || !options.tags) return;
-    const group = await this.getGroupByIdSchema(groupId, schemaId, drive);
+    const group = await this.getGroupByIdDrive(groupId, drive);
     if (!group)
       throw new BadRequestException(`group with id ${groupId} not found`);
     if (options.name) group.name = options.name;
@@ -78,8 +75,8 @@ export class GroupService {
     return await this.groupRepo.save(group);
   }
 
-  async deleteGroup(groupId: string, schemaId: string, drive: any) {
-    const group = await this.getGroupByIdSchema(groupId, schemaId, drive);
+  async deleteGroup(groupId: string, drive: any) {
+    const group = await this.getGroupByIdDrive(groupId, drive);
     if (!group)
       throw new BadRequestException(`group with id ${groupId} not found`);
     return await this.groupRepo.remove(group);
