@@ -18,12 +18,16 @@ import { UpdateSchemaDto } from "./dto/update-schema.dto";
 import { TagService } from "./tag.service";
 import { CreateTagDto } from "./dto/create-tag.dto";
 import { UpdateTagDto } from "./dto/update-tag.dto";
+import { GroupService } from "./group.service";
+import { CreateGroupDto } from "./dto/create-group.dto";
+import { UpdateGroupDto } from "./dto/update-group.dto";
 
 @UseGuards(AuthGuard)
 @UseInterceptors(SchematicsInterceptor)
 @Controller()
 export class SchematicsController {
   constructor(
+    private groupService: GroupService,
     private schematicsService: SchematicsService,
     private tagService: TagService
   ) {}
@@ -128,6 +132,51 @@ export class SchematicsController {
   @Delete("tag/:id")
   async deleteTag(@Param("id") id: string, @Req() req: any) {
     await this.tagService.deleteTagDrive(id, req.drive);
+    return;
+  }
+
+  //GROUP==================================
+
+  @Get("group/schema/:id")
+  async getAllGroup(@Param("id") id: string, @Req() req: any) {
+    const groups = await this.groupService.getAllGroupBySchema(id, req.drive);
+    return groups;
+  }
+
+  @Get("group/:groupId")
+  async getGroup(@Param("groupId") groupId: string, @Req() req: any) {
+    const group = await this.groupService.getGroupByIdDrive(groupId, req.drive);
+    return group;
+  }
+
+  @Post("group")
+  async createGroup(@Body() createGroupDto: CreateGroupDto, @Req() req: any) {
+    const created = await this.groupService.createGroup(
+      createGroupDto.name,
+      createGroupDto.schemaId,
+      req.drive
+    );
+    return created;
+  }
+
+  @Patch("group/:id")
+  async updateGroup(
+    @Body() updateGroupDto: UpdateGroupDto,
+    @Param("id") id: string,
+    @Req() req: any
+  ) {
+    const updated = await this.groupService.updateGroup(
+      id,
+      req.drive,
+      updateGroupDto
+    );
+
+    return updated;
+  }
+
+  @Delete("group/:id")
+  async deleteGroup(@Param("id") id: string, @Req() req: any) {
+    await this.groupService.deleteGroup(id, req.drive);
     return;
   }
 }
