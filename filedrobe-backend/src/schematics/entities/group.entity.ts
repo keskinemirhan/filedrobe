@@ -5,13 +5,13 @@ import {
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
-} from 'typeorm';
-import { Tag } from './tag.entity';
-import { Schema } from './schema.entity';
+} from "typeorm";
+import { Tag } from "./tag.entity";
+import { Schema } from "./schema.entity";
 
 @Entity()
 export class Group {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column()
