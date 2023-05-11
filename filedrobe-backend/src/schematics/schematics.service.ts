@@ -70,7 +70,7 @@ export class SchematicsService {
     const schema = await this.schemaRepo.findOne({ where: { id: schemaId } });
     if (!schema)
       throw new BadRequestException(`schema with id ${schemaId} not found`);
-    return await this.schemaRepo.remove(schema);
+    return await this.schemaRepo.delete(schema);
   }
 
   async deleteSchemaDrive(schemaId: string, drive: any) {
@@ -79,7 +79,7 @@ export class SchematicsService {
     });
     if (!schema)
       throw new BadRequestException(`schema with id ${schemaId} not found`);
-    return await this.schemaRepo.remove(schema);
+    return await this.schemaRepo.delete(schema);
   }
 
   async updateSchemaDrive(
