@@ -1,7 +1,13 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  forwardRef,
+} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Schema } from "./entities/schema.entity";
 import { Repository } from "typeorm";
+import { TagService } from "./tag.service";
 
 class SchemaRelations {
   groups = false;
@@ -12,7 +18,9 @@ class SchemaRelations {
 @Injectable()
 export class SchematicsService {
   constructor(
-    @InjectRepository(Schema) private schemaRepo: Repository<Schema>
+    @InjectRepository(Schema) private schemaRepo: Repository<Schema>,
+    @Inject(forwardRef(() => TagService))
+    private tagService: TagService
   ) {}
 
   defaultRelations = new SchemaRelations();
@@ -72,24 +80,30 @@ export class SchematicsService {
     return await this.schemaRepo.remove(schema);
   }
 
-  //   async updateSchemaDrive(
-  //     schemaId: string,
-  //     drive: any,
-  //     options: { name?: string; tags?: string[]; groups?: string[] }
-  //   ) {
-  //     if (!options.name || !options.tags || !options.groups) return;
-  //     const schema = await this.schemaRepo.findOne({
-  //       where: { id: schemaId, drive },
-  //       relations: {
-  //         tags: Boolean(options.tags),
-  //         groups: Boolean(options.groups),
-  //       },
-  //     });
-  //     if (options.name) schema.name = options.name;
-  //     if (options.tags) {
-  //       options.tags.forEach((tagId) => {
-  //         const tag; // continue here when tag service ready
-  //       });
-  //     }
-  //   }
+  async updateSchemaDrive(
+    schemaId: string,
+    drive: any,
+    options: { name?: string; tags?: string[]; groups?: string[] }
+  ) {
+    if (!options.name || !options.tags || !options.groups) return;
+    const schema = await this.schemaRepo.findOne({
+      where: { id: schemaId, drive },
+      relations: {
+        tags: Boolean(options.tags),
+        groups: Boolean(options.groups),
+      },
+    });
+    if (options.name) schema.name = options.name;
+    if (options.tags) {
+      const tags = [];
+      options.tags.forEach(async (tagId) => {
+        const tag = await this.tagService.getTagByIdDrive(tagId, drive);
+        if (!tag)
+          throw new BadRequestException(`tag with id ${tagId} not found`);
+        tags.push(tag);
+      });
+      schema.tags = tags;
+    }
+    return await this.schemaRepo.save(schema);
+  }
 }

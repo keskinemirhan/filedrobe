@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  forwardRef,
+} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Tag } from "./entities/tag.entity";
 import { Repository } from "typeorm";
@@ -8,6 +13,7 @@ import { SchematicsService } from "./schematics.service";
 export class TagService {
   constructor(
     @InjectRepository(Tag) private tagRepo: Repository<Tag>,
+    @Inject(forwardRef(() => SchematicsService))
     private schematicsService: SchematicsService
   ) {}
 
