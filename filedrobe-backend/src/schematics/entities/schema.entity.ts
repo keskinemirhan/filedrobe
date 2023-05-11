@@ -1,6 +1,7 @@
 import {
   Column,
   Entity,
+  JoinTable,
   ManyToMany,
   ManyToOne,
   OneToMany,
@@ -22,6 +23,7 @@ export class Schema {
   groups: Group[];
 
   @ManyToMany(() => Tag)
+  @JoinTable()
   tags: Tag[];
 
   @ManyToOne(() => UserDrive, (drive) => drive.schemas)
