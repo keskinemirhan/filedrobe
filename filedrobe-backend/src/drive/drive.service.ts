@@ -19,7 +19,6 @@ export class DriveService {
     @Inject(forwardRef(() => FolderService))
     private folderService: FolderService,
     @InjectRepository(UserDrive) private driveRepo: Repository<UserDrive>,
-    @InjectRepository(DriveFolder)
     private profileService: ProfileService
   ) {}
 
