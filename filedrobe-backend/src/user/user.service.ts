@@ -2,25 +2,31 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-} from '@nestjs/common';
-import { SCreateUserDto } from './sdto/s.create-user.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
-import { updateUserDto } from './dto/update-user.dto';
+} from "@nestjs/common";
+import { SCreateUserDto } from "./sdto/s.create-user.dto";
+import { InjectRepository } from "@nestjs/typeorm";
+import { User } from "./entities/user.entity";
+import { Repository } from "typeorm";
+import { updateUserDto } from "./dto/update-user.dto";
+
+class UserRelations {
+  profile? = false;
+}
 
 @Injectable()
 export class UserService {
   constructor(@InjectRepository(User) private repo: Repository<User>) {}
+
+  defaultRelations = new UserRelations();
 
   async createUser(sCreateUserDto: SCreateUserDto): Promise<User> {
     const email = sCreateUserDto.email;
     const username = sCreateUserDto.username;
 
     const matchEmail = await this.matchByEmail(email);
-    if (matchEmail) throw new BadRequestException('Email already exists');
+    if (matchEmail) throw new BadRequestException("Email already exists");
     const matchUsername = await this.matchByUsername(username);
-    if (matchUsername) throw new BadRequestException('Username already exists');
+    if (matchUsername) throw new BadRequestException("Username already exists");
 
     const user = this.repo.create({
       email: sCreateUserDto.email,
@@ -34,18 +40,23 @@ export class UserService {
     return createdUser;
   }
 
-  async findById(id: string): Promise<User> {
+  async findById(id: string, relations = this.defaultRelations): Promise<User> {
     const user = await this.repo.findOne({
       where: { id },
+      relations,
     });
     return user;
   }
 
-  async findByEmail(email: string): Promise<User> {
+  async findByEmail(
+    email: string,
+    relations = this.defaultRelations
+  ): Promise<User> {
     const user = await this.repo.findOne({
       where: {
         email,
       },
+      relations,
     });
     return user;
   }
@@ -53,11 +64,11 @@ export class UserService {
   async updateUser(userId: string, updateUserDto: updateUserDto) {
     if (updateUserDto.email) {
       if (await this.matchByEmail(updateUserDto.email))
-        throw new BadRequestException('this email is taken');
+        throw new BadRequestException("this email is taken");
     }
     if (updateUserDto.username) {
       if (await this.matchByUsername(updateUserDto.username))
-        throw new BadRequestException('this username is taken');
+        throw new BadRequestException("this username is taken");
     }
     const user = await this.findById(userId);
     Object.assign(user, updateUserDto);
@@ -66,11 +77,15 @@ export class UserService {
     return saved;
   }
 
-  async findByUsername(username: string): Promise<User> {
+  async findByUsername(
+    username: string,
+    relations = this.defaultRelations
+  ): Promise<User> {
     const user = await this.repo.findOne({
       where: {
         username,
       },
+      relations,
     });
     return user;
   }
