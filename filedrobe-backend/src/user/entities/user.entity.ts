@@ -1,15 +1,15 @@
-import { Profile } from 'src/profile/entities/profile.entity';
+import { Profile } from "src/profile/entities/profile.entity";
 import {
   Column,
   Entity,
   JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
-} from 'typeorm';
+} from "typeorm";
 
 @Entity()
 export class User {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column()
@@ -21,7 +21,7 @@ export class User {
   @Column()
   password: string;
 
-  @OneToOne(() => Profile, { eager: true })
+  @OneToOne(() => Profile)
   @JoinColumn()
   profile: Profile;
   //TODO profile and drive

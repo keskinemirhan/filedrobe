@@ -5,24 +5,24 @@ import {
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
-} from 'typeorm';
-import { DriveFile } from './drive-file.entity';
-import { DriveFolder } from './drive-folder.entity';
-import { Schema } from 'src/schematics/entities/schema.entity';
-import { Tag } from 'src/schematics/entities/tag.entity';
+} from "typeorm";
+import { DriveFile } from "./drive-file.entity";
+import { DriveFolder } from "./drive-folder.entity";
+import { Schema } from "src/schematics/entities/schema.entity";
+import { Tag } from "src/schematics/entities/tag.entity";
 
 @Entity()
 export class UserDrive {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @OneToMany(() => Tag, (tag) => tag.drive)
   tags: Tag[];
 
-  @OneToMany(() => DriveFile, (file) => file.drive, { eager: true })
+  @OneToMany(() => DriveFile, (file) => file.drive)
   files: DriveFile[];
 
-  @OneToOne(() => DriveFolder, { eager: true })
+  @OneToOne(() => DriveFolder)
   @JoinColumn()
   rootFolder: DriveFolder;
 

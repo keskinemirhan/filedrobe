@@ -24,7 +24,7 @@ export class DriveFolder {
   @Column()
   name: string;
 
-  @OneToMany(() => DriveFile, (file) => file.folder, { eager: true })
+  @OneToMany(() => DriveFile, (file) => file.folder)
   files: DriveFile[];
 
   @TreeChildren()
