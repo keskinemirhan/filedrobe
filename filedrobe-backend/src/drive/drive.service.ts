@@ -43,7 +43,7 @@ export class DriveService {
     const profile = await this.profileService.getProfileById(profileId, {
       drive: true,
     });
-    const drive = this.driveRepo.findOne({
+    const drive = await this.driveRepo.findOne({
       where: { id: profile.drive.id },
       relations,
     });
