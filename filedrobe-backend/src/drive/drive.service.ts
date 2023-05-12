@@ -7,10 +7,10 @@ import { DriveFolder } from "./entities/drive-folder.entity";
 import { FolderService } from "./folder.service";
 
 class DriveRelations {
-  tags = false;
-  files = false;
-  rootFolder = false;
-  schemas = false;
+  tags? = false;
+  files? = false;
+  rootFolder? = false;
+  schemas? = false;
 }
 
 @Injectable()
@@ -40,8 +40,13 @@ export class DriveService {
     profileId: string,
     relations = this.defaultRelations
   ) {
-    const profile = await this.profileService.getProfileById(profileId, true);
-    const drive = profile.drive;
+    const profile = await this.profileService.getProfileById(profileId, {
+      drive: true,
+    });
+    const drive = this.driveRepo.findOne({
+      where: { id: profile.drive.id },
+      relations,
+    });
     return drive;
   }
 

@@ -14,9 +14,9 @@ import { UserService } from "src/user/user.service";
 import { DriveFolder } from "./entities/drive-folder.entity";
 
 class FileRelations {
-  users = false;
-  folder = false;
-  drive = false;
+  users? = false;
+  folder? = false;
+  drive? = false;
 }
 
 @Injectable()
