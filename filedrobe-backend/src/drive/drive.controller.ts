@@ -22,7 +22,11 @@ import { UpdateFileDto } from "./dto/update-file.dto";
 import { FolderService } from "./folder.service";
 import { FileService } from "./file.service";
 import { Profile } from "src/profile/decorators/profile.decorator";
+import { QueryFileDto } from "./dto/query-file.dto";
+import { QueryFolderDto } from "./dto/query-folder.dto";
+import { QueryDriveDto } from "./dto/query-drive.dto";
 
+@UseGuards(AuthGuard)
 @Controller("drive")
 export class DriveController {
   constructor(
@@ -36,10 +40,12 @@ export class DriveController {
     return await this.driveService.getAllDrive();
   }
 
-  @UseGuards(AuthGuard)
   @Get()
-  async getMyDrive(@Req() req: any) {
-    return await this.driveService.getDriveByProfileId(req.user.profile.id);
+  async getMyDrive(@Body() queryDriveDto: QueryDriveDto, @Req() req: any) {
+    return await this.driveService.getDriveByProfileId(
+      req.user.profile.id,
+      queryDriveDto
+    );
   }
 
   //folder
@@ -50,7 +56,6 @@ export class DriveController {
     return await this.folderService.getAllFolderTree();
   }
 
-  @UseGuards(AuthGuard)
   @Post("folder")
   async createFolder(
     @Req() req: any,
@@ -63,13 +68,15 @@ export class DriveController {
     );
   }
 
-  @UseGuards(AuthGuard)
   @Get("folder/:id")
-  async getFolder(@Profile() profile: any, @Param("id") id: string) {
-    return await this.folderService.getFolder(id, profile);
+  async getFolder(
+    @Body() queryFolderDto: QueryFolderDto,
+    @Profile() profile: any,
+    @Param("id") id: string
+  ) {
+    return await this.folderService.getFolder(id, profile, queryFolderDto);
   }
 
-  @UseGuards(AuthGuard)
   @Patch("folder/:id")
   async updateFolder(
     @Req() req: any,
@@ -86,7 +93,6 @@ export class DriveController {
     );
   }
 
-  @UseGuards(AuthGuard)
   @Delete("folder/:id")
   async deleteFolder(@Profile() profile: any, @Param("id") id: string) {
     return await this.folderService.deleteFolder(id, profile);
@@ -94,7 +100,6 @@ export class DriveController {
 
   //FILE
 
-  @UseGuards(AuthGuard)
   @Get("file/download/:fileId")
   async downloadFile(
     @Res() res: any,
@@ -105,7 +110,6 @@ export class DriveController {
     file.pipe(res);
   }
 
-  @UseGuards(AuthGuard)
   @Post("upload/:folderId")
   @UseInterceptors(
     FileInterceptor("file", {
@@ -122,19 +126,23 @@ export class DriveController {
     return await this.fileService.uploadFile(file, folderId, profile);
   }
 
-  @UseGuards(AuthGuard)
   @Get("file/:id")
-  async getFile(@Param("id") fileId: string, @Profile() profile: any) {
-    return await this.fileService.getFile(fileId, profile);
+  async getFile(
+    @Body() queryFileDto: QueryFileDto,
+    @Param("id") fileId: string,
+    @Profile() profile: any
+  ) {
+    return await this.fileService.getFile(fileId, profile, queryFileDto);
   }
 
-  @UseGuards(AuthGuard)
   @Get("file")
-  async getAllFile(@Profile() profile: any) {
-    return await this.fileService.getAllFile(profile);
+  async getAllFile(
+    @Body() queryFileDto: QueryFileDto,
+    @Profile() profile: any
+  ) {
+    return await this.fileService.getAllFile(profile, queryFileDto);
   }
 
-  @UseGuards(AuthGuard)
   @Patch("file/content/:id")
   @UseInterceptors(
     FileInterceptor("file", {
@@ -151,7 +159,6 @@ export class DriveController {
     return await this.fileService.updateFileContent(newFile, fileId, profile);
   }
 
-  @UseGuards(AuthGuard)
   @Patch("file/:id")
   async updateFileAttributes(
     @Param("id ") fileId: string,
@@ -167,7 +174,6 @@ export class DriveController {
     });
   }
 
-  @UseGuards(AuthGuard)
   @Delete("file/:id")
   async deleteFile(@Param("id") fileId: string, @Profile() profile: any) {
     return await this.fileService.deleteFile(fileId, profile);
