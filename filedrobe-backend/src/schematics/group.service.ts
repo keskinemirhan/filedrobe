@@ -10,6 +10,12 @@ import { Repository } from "typeorm";
 import { SchematicsService } from "./schematics.service";
 import { TagService } from "./tag.service";
 
+class GroupRelations {
+  drive? = false;
+  tags? = false;
+  schema? = false;
+}
+
 @Injectable()
 export class GroupService {
   constructor(
@@ -18,16 +24,28 @@ export class GroupService {
     private schematicsService: SchematicsService,
     @Inject(forwardRef(() => TagService)) private tagService: TagService
   ) {}
-  async getGroupByIdDrive(groupId: string, drive: any) {
+
+  defaultOptions = new GroupRelations();
+
+  async getGroupByIdDrive(
+    groupId: string,
+    drive: any,
+    relations = this.defaultOptions
+  ) {
     const group = await this.groupRepo.findOne({
       where: { id: groupId, drive },
+      relations,
     });
     if (!group)
       throw new BadRequestException(`group with id ${groupId} not found`);
     return group;
   }
 
-  async getAllGroupBySchema(schemaId: string, drive: any) {
+  async getAllGroupBySchema(
+    schemaId: string,
+    drive: any,
+    relations = this.defaultOptions
+  ) {
     const schema = await this.schematicsService.getSchemaByIdDrive(
       schemaId,
       drive,
@@ -37,7 +55,16 @@ export class GroupService {
         drive: false,
       }
     );
-    return schema.groups;
+    const groups = [];
+    await schema.groups.forEach(async (group) => {
+      const found = await this.groupRepo.findOne({
+        where: { id: group.id },
+        relations,
+      });
+
+      groups.push(found);
+    });
+    return groups;
   }
 
   async createGroup(name: string, schemaId: string, drive: any) {

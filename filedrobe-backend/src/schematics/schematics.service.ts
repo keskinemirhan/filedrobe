@@ -10,9 +10,9 @@ import { Repository } from "typeorm";
 import { TagService } from "./tag.service";
 
 class SchemaRelations {
-  groups = false;
-  tags = false;
-  drive = false;
+  groups? = false;
+  tags? = false;
+  drive? = false;
 }
 
 @Injectable()

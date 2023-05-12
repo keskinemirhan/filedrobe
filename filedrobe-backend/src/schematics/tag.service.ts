@@ -9,6 +9,10 @@ import { Tag } from "./entities/tag.entity";
 import { Repository } from "typeorm";
 import { SchematicsService } from "./schematics.service";
 
+class TagRelations {
+  drive? = false;
+}
+
 @Injectable()
 export class TagService {
   constructor(
@@ -17,18 +21,31 @@ export class TagService {
     private schematicsService: SchematicsService
   ) {}
 
-  async getTagByIdDrive(tagId: string, drive: any) {
-    const tag = await this.tagRepo.findOne({ where: { id: tagId, drive } });
+  defaultRelations = new TagRelations();
+
+  async getTagByIdDrive(
+    tagId: string,
+    drive: any,
+    relations = this.defaultRelations
+  ) {
+    const tag = await this.tagRepo.findOne({
+      where: { id: tagId, drive },
+      relations,
+    });
     if (!tag) throw new BadRequestException(`tag with id ${tagId} not found`);
     return await tag;
   }
 
-  async getAllTagByDrive(drive: any) {
-    const tags = await this.tagRepo.find({ where: { drive } });
+  async getAllTagByDrive(drive: any, relations = this.defaultRelations) {
+    const tags = await this.tagRepo.find({ where: { drive }, relations });
     return await tags;
   }
 
-  async getAllTagBySchema(schemaId: string, drive: any) {
+  async getAllTagBySchema(
+    schemaId: string,
+    drive: any,
+    relations = this.defaultRelations
+  ) {
     const schema = await this.schematicsService.getSchemaByIdDrive(
       schemaId,
       drive,
@@ -40,7 +57,15 @@ export class TagService {
     );
     if (!schema)
       throw new BadRequestException(`schema with id ${schemaId} not found`);
-    return schema.tags;
+    const tags = [];
+    await schema.tags.forEach(async (tag) => {
+      const found = await this.tagRepo.findOne({
+        where: { id: tag.id },
+        relations,
+      });
+      tags.push(found);
+    });
+    return tags;
   }
 
   async createTag(
