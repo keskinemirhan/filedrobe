@@ -2,42 +2,56 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-  Req,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Profile } from './entities/profile.entity';
-import { Repository } from 'typeorm';
-import { UserService } from 'src/user/user.service';
-import { UpdateProfileDto } from './dto/update-profile.dto';
-import { User } from 'src/user/entities/user.entity';
-import { UserDrive } from 'src/drive/entities/user-drive.entity';
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Profile } from "./entities/profile.entity";
+import { Repository } from "typeorm";
+import { UserService } from "src/user/user.service";
+import { UpdateProfileDto } from "./dto/update-profile.dto";
+import { User } from "src/user/entities/user.entity";
+import { UserDrive } from "src/drive/entities/user-drive.entity";
+
+class ProfileRelations {
+  drive? = false;
+  contacts? = false;
+}
 
 @Injectable()
 export class ProfileService {
   constructor(
     @InjectRepository(Profile) private repo: Repository<Profile>,
-    private userService: UserService,
+    private userService: UserService
   ) {}
+
+  defaultRelations = new ProfileRelations();
+
   async createProfile(drive: UserDrive) {
     const profile = this.repo.create({ drive });
     return await this.repo.save(profile);
   }
 
-  async getProfileById(profileId: string, drive: boolean = false) {
+  async getProfileById(profileId: string, relations = this.defaultRelations) {
     const myProfile = await this.repo.findOne({
       where: {
         id: profileId,
       },
-      relations: { drive },
+      relations,
     });
 
     return myProfile;
   }
 
-  async getProfileByUsername(username: string) {
+  async getProfileByUsername(
+    username: string,
+    relations = this.defaultRelations
+  ) {
     const user = await this.userService.findByUsername(username);
-    if (!user) throw new NotFoundException('profile not found');
-    const profile = user.profile;
+    if (!user) throw new NotFoundException("profile not found");
+    const profile = await this.repo.findOne({
+      where: { id: user.profile.id },
+      relations,
+    });
+
     return profile;
   }
 
@@ -55,7 +69,7 @@ export class ProfileService {
         const user = await this.userService.findByUsername(username);
         if (!user)
           throw new BadRequestException(
-            `user with username ${user.username} does not exist`,
+            `user with username ${user.username} does not exist`
           );
         profile.contacts.push(user);
       });
