@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Patch,
-  Post,
-  Req,
-  UseGuards,
-  UseInterceptors,
-} from "@nestjs/common";
+import { Body, Controller, Get, Patch, Req, UseGuards } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { AuthGuard } from "src/auth/guard/auth.guard";
 import { updateUserDto } from "./dto/update-user.dto";
@@ -25,8 +16,7 @@ export class UsersController {
   @UseGuards(AuthGuard)
   @Get()
   async getMe(@Req() req: any) {
-    const { profile, password, id, ...user } = req.user;
-    return user;
+    return req.user;
   }
 
   @UseGuards(AuthGuard)
