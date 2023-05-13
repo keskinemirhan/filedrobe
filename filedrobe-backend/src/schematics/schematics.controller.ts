@@ -21,6 +21,9 @@ import { UpdateTagDto } from "./dto/update-tag.dto";
 import { GroupService } from "./group.service";
 import { CreateGroupDto } from "./dto/create-group.dto";
 import { UpdateGroupDto } from "./dto/update-group.dto";
+import { QuerySchemaDto } from "./dto/query-schema.dto";
+import { QueryGroupDto } from "./dto/query-group.dto";
+import { QueryTagDto } from "./dto/query-tag.dto";
 
 @UseGuards(AuthGuard)
 @UseInterceptors(SchematicsInterceptor)
@@ -33,16 +36,24 @@ export class SchematicsController {
   ) {}
   //Schema==========================================
   @Get("schema")
-  async getAllSchema(@Req() req: any) {
-    const schemas = await this.schematicsService.getAllSchemaDrive(req.drive);
+  async getAllSchema(@Body() querySchemaDto: QuerySchemaDto, @Req() req: any) {
+    const schemas = await this.schematicsService.getAllSchemaDrive(
+      req.drive,
+      querySchemaDto
+    );
     return schemas;
   }
 
   @Get("schema/:id")
-  async getSchema(@Param("id") id: string, @Req() req: any) {
+  async getSchema(
+    @Body() querySchemaDto: QuerySchemaDto,
+    @Param("id") id: string,
+    @Req() req: any
+  ) {
     const schema = await this.schematicsService.getSchemaByIdDrive(
       id,
-      req.drive
+      req.drive,
+      querySchemaDto
     );
     return schema;
   }
@@ -84,20 +95,36 @@ export class SchematicsController {
 
   //TAG=========================================
   @Get("tag/:id")
-  async getTag(@Param("id") id: string, @Req() req: any) {
-    const tag = await this.tagService.getTagByIdDrive(id, req.drive);
+  async getTag(
+    @Body() queryTagDto: QueryTagDto,
+    @Param("id") id: string,
+    @Req() req: any
+  ) {
+    const tag = await this.tagService.getTagByIdDrive(
+      id,
+      req.drive,
+      queryTagDto
+    );
     return tag;
   }
 
   @Get("tag")
-  async getAllTagByDrive(@Req() req: any) {
-    const tags = await this.tagService.getAllTagByDrive(req.drive);
+  async getAllTagByDrive(@Body() queryTagDto: QueryTagDto, @Req() req: any) {
+    const tags = await this.tagService.getAllTagByDrive(req.drive, queryTagDto);
     return tags;
   }
 
   @Get("tag/schema/:id")
-  async getAllTagBySchema(@Req() req: any, @Param("id") id: string) {
-    const tags = await this.tagService.getAllTagBySchema(id, req.drive);
+  async getAllTagBySchema(
+    @Body() queryTagDto: QueryTagDto,
+    @Req() req: any,
+    @Param("id") id: string
+  ) {
+    const tags = await this.tagService.getAllTagBySchema(
+      id,
+      req.drive,
+      queryTagDto
+    );
     return tags;
   }
 
@@ -138,14 +165,30 @@ export class SchematicsController {
   //GROUP==================================
 
   @Get("group/schema/:id")
-  async getAllGroup(@Param("id") id: string, @Req() req: any) {
-    const groups = await this.groupService.getAllGroupBySchema(id, req.drive);
+  async getAllGroup(
+    @Body() queryGroupDto: QueryGroupDto,
+    @Param("id") id: string,
+    @Req() req: any
+  ) {
+    const groups = await this.groupService.getAllGroupBySchema(
+      id,
+      req.drive,
+      queryGroupDto
+    );
     return groups;
   }
 
   @Get("group/:groupId")
-  async getGroup(@Param("groupId") groupId: string, @Req() req: any) {
-    const group = await this.groupService.getGroupByIdDrive(groupId, req.drive);
+  async getGroup(
+    @Body() queryGroupDto: QueryGroupDto,
+    @Param("groupId") groupId: string,
+    @Req() req: any
+  ) {
+    const group = await this.groupService.getGroupByIdDrive(
+      groupId,
+      req.drive,
+      queryGroupDto
+    );
     return group;
   }
 
