@@ -1,7 +1,7 @@
 {
   "name": "filedrobe-backend",
-  "version": "0.0.1",
-  "description": "Filedrobe backend",
+  "version": "0.1.0",
+  "description": "Filedrobe backend v0.1.0",
   "author": "cppmonger",
   "private": true,
   "license": "GPLv3",
